@@ -2,7 +2,7 @@
 
 namespace Fligno\ApiSdkKit;
 
-use Fligno\PaymentSdkKit\Containers\MakeRequest;
+use Fligno\ApiSdkKit\Containers\MakeRequest;
 use Illuminate\Support\ServiceProvider;
 
 class ApiSdkKitServiceProvider extends ServiceProvider
