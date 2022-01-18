@@ -12,6 +12,7 @@
     "homepage": "https://github.com/fligno/api-sdk-kit",
     "keywords": ["Laravel", "ApiSdkKit"],
     "require": {
+        "php": "^8.0",
         "illuminate/support": "~7|~8",
         "fligno/starter-kit": "^1.0.0"
     },
@@ -46,12 +47,6 @@
         "branch-alias": {
             "dev-master": "1.0.x-dev",
             "dev-develop": "1.0.x-dev"
-        }
-    },
-    "repositories": {
-        "git.fligno.com/440": {
-            "type": "composer",
-            "url": "https://git.fligno.com/api/v4/group/440/-/packages/composer/packages.json"
         }
     }
 }
