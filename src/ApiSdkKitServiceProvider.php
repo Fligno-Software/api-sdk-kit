@@ -3,28 +3,11 @@
 namespace Fligno\ApiSdkKit;
 
 use Fligno\ApiSdkKit\Containers\MakeRequest;
-use Illuminate\Support\ServiceProvider;
+use Fligno\StarterKit\Providers\AbstractStarterKitServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Http;
 
 class ApiSdkKitServiceProvider extends ServiceProvider
 {
-    /**
-     * Perform post-registration booting of services.
-     *
-     * @return void
-     */
-    public function boot(): void
-    {
-        // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'fligno');
-        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'fligno');
-        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        // $this->loadRoutesFrom(__DIR__.'/routes.php');
-
-        // Publishing is only necessary when using the CLI.
-        if ($this->app->runningInConsole()) {
-            $this->bootForConsole();
-        }
-    }
-
     /**
      * Register any package services.
      *

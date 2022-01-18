@@ -2,6 +2,7 @@
 
 namespace Fligno\ApiSdkKit\Containers;
 
+use Fligno\ApiSdkKit\Abstracts\BaseJsonSerializable;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -39,12 +40,12 @@ class MakeRequest
     /**
      * @param string $method
      * @param string $append_url
-     * @param array $data
-     * @param array $headers
+     * @param BaseJsonSerializable|array $data
+     * @param BaseJsonSerializable|array $headers
      * @param bool $as_json
      * @return PromiseInterface|Response
      */
-    public function execute(string $method, string $append_url = '', array $data = [], array $headers = [], bool $as_json = true): PromiseInterface|Response
+    public function execute(string $method, string $append_url = '', BaseJsonSerializable|array $data = [], BaseJsonSerializable|array $headers = [], bool $as_json = true): PromiseInterface|Response
     {
         // Prepare URL
 

@@ -4,7 +4,7 @@
  * @author James Carlo Luchavez <jamescarlo.luchavez@fligno.com>
  */
 
-use Fligno\PaymentSdkKit\Containers\MakeRequest;
+use Fligno\ApiSdkKit\Containers\MakeRequest;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
