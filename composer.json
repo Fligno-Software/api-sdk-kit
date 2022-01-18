@@ -1,0 +1,57 @@
+{
+    "name": "fligno/api-sdk-kit",
+    "description": "API Integration Starter Kit for Laravel SDK Packages",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "James Carlo Luchavez",
+            "email": "jamescarlo.luchavez@fligno.com",
+            "homepage": "https://www.linkedin.com/in/jsluchavez/"
+        }
+    ],
+    "homepage": "https://github.com/fligno/api-sdk-kit",
+    "keywords": ["Laravel", "ApiSdkKit"],
+    "require": {
+        "illuminate/support": "~7|~8",
+        "fligno/starter-kit": "^1.0.0"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-latest",
+        "phpunit/phpunit": "~9.0",
+        "orchestra/testbench": "~5|~6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Fligno\\ApiSdkKit\\": "src/"
+        },
+        "files": [
+            "helpers/api-sdk-kit-helper.php",
+            "helpers/make-request-helper.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Fligno\\ApiSdkKit\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Fligno\\ApiSdkKit\\ApiSdkKitServiceProvider"
+            ],
+            "aliases": {
+                "ApiSdkKit": "Fligno\\ApiSdkKit\\Facades\\ApiSdkKit"
+            }
+        },
+        "branch-alias": {
+            "dev-master": "1.0.x-dev",
+            "dev-develop": "1.0.x-dev"
+        }
+    },
+    "repositories": {
+        "git.fligno.com/440": {
+            "type": "composer",
+            "url": "https://git.fligno.com/api/v4/group/440/-/packages/composer/packages.json"
+        }
+    }
+}
