@@ -4,8 +4,13 @@ namespace Fligno\ApiSdkKit;
 
 use Fligno\ApiSdkKit\Containers\MakeRequest;
 use Fligno\StarterKit\Providers\AbstractStarterKitServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Http;
 
+/**
+ * Class ApiSdkKitServiceProvider
+ * 
+ * @author James Carlo Luchavez <jamescarlo.luchavez@fligno.com>
+ * @since 2022-01-20
+ */
 class ApiSdkKitServiceProvider extends ServiceProvider
 {
     /**
@@ -24,7 +29,7 @@ class ApiSdkKitServiceProvider extends ServiceProvider
 
         // Register the MakeRequest Service Container
         $this->app->bind('make-request', function ($app, $params) {
-            return new MakeRequest($params['base_url'] ?? null, $params['http'] ?? null);
+            return new MakeRequest($params['base_url'] ?? null);
         });
     }
 
@@ -33,7 +38,7 @@ class ApiSdkKitServiceProvider extends ServiceProvider
      *
      * @return array
      */
-    public function provides()
+    public function provides(): array
     {
         return ['api-sdk-kit'];
     }
