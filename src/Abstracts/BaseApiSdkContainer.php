@@ -2,7 +2,8 @@
 
 namespace Fligno\ApiSdkKit\Abstracts;
 
-use Fligno\ApiSdkKit\Interfaces\CanHealthCheckInterface;
+use Fligno\ApiSdkKit\Containers\MakeRequest;
+use Fligno\ApiSdkKit\Interfaces\CanGetHealthCheckInterface;
 
 /**
  * Class BaseApiSdkContainer
@@ -12,33 +13,25 @@ use Fligno\ApiSdkKit\Interfaces\CanHealthCheckInterface;
 abstract class BaseApiSdkContainer
 {
     /**
-     * @var string|null
-     */
-    protected ?string $base_url = null;
-
-    /**
      * @return bool
      */
-    public function canHealthCheck(): bool
+    public function canGetHealthCheck(): bool
     {
-        return $this instanceof CanHealthCheckInterface;
+        return $this instanceof CanGetHealthCheckInterface;
     }
 
     /***** GETTERS & SETTERS *****/
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getBaseUrl(): ?string
-    {
-        return $this->base_url;
-    }
+    abstract public function getBaseUrl(): string;
 
     /**
-     * @param string|null $base_url
+     * @return MakeRequest
      */
-    public function setBaseUrl(?string $base_url): void
+    public function getMakeRequest(): MakeRequest
     {
-        $this->base_url = $base_url;
+        return makeRequest(rtrim(trim($this->getBaseUrl()), '/'));
     }
 }
