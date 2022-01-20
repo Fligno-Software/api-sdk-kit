@@ -3,11 +3,11 @@
 namespace Fligno\ApiSdkKit;
 
 use Fligno\ApiSdkKit\Containers\MakeRequest;
-use Fligno\StarterKit\Providers\AbstractStarterKitServiceProvider as ServiceProvider;
+use Fligno\StarterKit\Providers\BaseStarterKitServiceProvider as ServiceProvider;
 
 /**
  * Class ApiSdkKitServiceProvider
- * 
+ *
  * @author James Carlo Luchavez <jamescarlo.luchavez@fligno.com>
  * @since 2022-01-20
  */

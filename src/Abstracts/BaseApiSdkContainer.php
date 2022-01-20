@@ -3,7 +3,7 @@
 namespace Fligno\ApiSdkKit\Abstracts;
 
 use Fligno\ApiSdkKit\Containers\MakeRequest;
-use Fligno\ApiSdkKit\Interfaces\CanHealthCheckInterface;
+use Fligno\ApiSdkKit\Interfaces\CanGetHealthCheckInterface;
 
 /**
  * Class BaseApiSdkContainer
@@ -15,9 +15,9 @@ abstract class BaseApiSdkContainer
     /**
      * @return bool
      */
-    public function canHealthCheck(): bool
+    public function canGetHealthCheck(): bool
     {
-        return $this instanceof CanHealthCheckInterface;
+        return $this instanceof CanGetHealthCheckInterface;
     }
 
     /***** GETTERS & SETTERS *****/
