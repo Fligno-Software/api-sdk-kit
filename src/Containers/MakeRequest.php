@@ -2,11 +2,14 @@
 
 namespace Fligno\ApiSdkKit\Containers;
 
-use Fligno\ApiSdkKit\Abstracts\BaseJsonSerializable;
+use Fligno\StarterKit\Abstracts\BaseJsonSerializable;
+use Fligno\ApiSdkKit\Traits\UsesHttpFieldsTrait;
 use GuzzleHttp\Promise\PromiseInterface;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use JsonException;
 use RuntimeException;
 
@@ -18,11 +21,16 @@ use RuntimeException;
 
 class MakeRequest
 {
+    use UsesHttpFieldsTrait;
+
     public const HEAD = 'head';
     public const GET = 'get';
     public const POST = 'post';
     public const PUT = 'put';
     public const DELETE = 'delete';
+
+    public const AS_JSON = 'as_json';
+    public const AS_FORM = 'as_form';
 
     /**
      * @var string|null
@@ -35,14 +43,9 @@ class MakeRequest
     protected ?string $append_url;
 
     /**
-     * @var BaseJsonSerializable|Collection|array
+     * @var string|null
      */
-    protected BaseJsonSerializable|Collection|array $data = [];
-
-    /***
-     * @var BaseJsonSerializable|Collection|array
-     */
-    protected BaseJsonSerializable|Collection|array $headers = [];
+    protected ?string $body_format;
 
     /**
      * @param string|null $base_url
@@ -55,42 +58,36 @@ class MakeRequest
     /**
      * @param string $method
      * @param string $append_url
-     * @param bool $format_as_json
+     * @param string|null $body_format
      * @return PromiseInterface|Response
      */
-    public function execute(string $method, string $append_url = '', bool $format_as_json = true): PromiseInterface|Response
+    public function execute(string $method, string $append_url = '', string $body_format = null): PromiseInterface|Response
     {
         // Prepare URL
 
-        if (! ($this->base_url)) {
+        if (! ($this->getBaseUrl())) {
             throw new RuntimeException('Base URL is empty.');
         }
 
+        // Set Append URL
+
         $this->setAppendUrl($append_url);
+
+        // Set Body Format
+
+        $this->setBodyFormat($body_format);
+
+        // Get Complete URL
 
         $url = $this->getCompleteUrl();
 
         // Prepare Data
 
-        $data = $this->normalizeToArray($this->getData());
+        $data = self::normalizeToArray($this->getData());
 
-        // Prepare Headers
+        // Prepare Guzzle HTTP
 
-        $headers = $this->normalizeToArray($this->getHeaders());
-
-        // Prepare HTTP call
-
-        $response = Http::withHeaders($headers);
-
-        // Prepare Body Format
-
-        $response = $format_as_json ? $response->asJson() : $response->asForm();
-
-        // Prepare SSL Verify
-
-        if (! config('terrapay-sdk.verify_ssl')) { // Note: Read https://docs.guzzlephp.org/en/stable/request-options.html#verify
-            $response = $response->withoutVerifying();
-        }
+        $response = $this->getHttp();
 
         // Initiate HTTP call
 
@@ -106,59 +103,59 @@ class MakeRequest
 
     /**
      * @param string $append_url
-     * @param bool $format_as_json
+     * @param string|null $body_format
      * @return PromiseInterface|Response
      */
-    public function executeHead(string $append_url = '', bool $format_as_json = true): PromiseInterface|Response
+    public function executeHead(string $append_url = '', string $body_format = null): PromiseInterface|Response
     {
-        return $this->execute(self::HEAD, $append_url, $format_as_json);
+        return $this->execute(self::HEAD, $append_url, $body_format);
     }
 
     /**
      * @param string $append_url
-     * @param bool $format_as_json
+     * @param string|null $body_format
      * @return PromiseInterface|Response
      */
-    public function executeGet(string $append_url = '', bool $format_as_json = true): PromiseInterface|Response
+    public function executeGet(string $append_url = '', string $body_format = null): PromiseInterface|Response
     {
-        return $this->execute(self::GET, $append_url, $format_as_json);
+        return $this->execute(self::GET, $append_url, $body_format);
     }
 
     /**
      * @param string $append_url
-     * @param bool $format_as_json
+     * @param string|null $body_format
      * @return PromiseInterface|Response
      */
-    public function executePost(string $append_url = '', bool $format_as_json = true): PromiseInterface|Response
+    public function executePost(string $append_url = '', string $body_format = null): PromiseInterface|Response
     {
-        return $this->execute(self::POST, $append_url, $format_as_json);
+        return $this->execute(self::POST, $append_url, $body_format);
     }
 
     /**
      * @param string $append_url
-     * @param bool $format_as_json
+     * @param string|null $body_format
      * @return PromiseInterface|Response
      */
-    public function executePut(string $append_url = '', bool $format_as_json = true): PromiseInterface|Response
+    public function executePut(string $append_url = '', string $body_format = null): PromiseInterface|Response
     {
-        return $this->execute(self::PUT, $append_url, $format_as_json);
+        return $this->execute(self::PUT, $append_url, $body_format);
     }
 
     /**
      * @param string $append_url
-     * @param bool $format_as_json
+     * @param string|null $body_format
      * @return PromiseInterface|Response
      */
-    public function executeDelete(string $append_url = '', bool $format_as_json = true): PromiseInterface|Response
+    public function executeDelete(string $append_url = '', string $body_format = null): PromiseInterface|Response
     {
-        return $this->execute(self::DELETE, $append_url, $format_as_json);
+        return $this->execute(self::DELETE, $append_url, $body_format);
     }
 
     /**
      * @param BaseJsonSerializable|Collection|array $data
      * @return array
      */
-    public function normalizeToArray(BaseJsonSerializable|Collection|array $data): array
+    public static function normalizeToArray(BaseJsonSerializable|Collection|array $data): array
     {
         if ($data instanceof Collection) {
             $data = $data->toArray();
@@ -176,6 +173,32 @@ class MakeRequest
     }
 
     /***** SETTERS & GETTERS *****/
+
+    /**
+     * @return PendingRequest
+     */
+    public function getHttp(): PendingRequest
+    {
+        // Prepare Headers
+
+        $headers = self::normalizeToArray($this->getHeaders());
+
+        // Prepare HttpOptions
+
+        $options = self::normalizeToArray($this->getHttpOptions());
+
+        // Prepare HTTP call
+
+        $response = Http::withHeaders($headers)->withOptions($options);
+
+        // Prepare Body Format
+
+        return match ($this->getBodyFormat()) {
+            self::AS_FORM => $response->asForm(),
+            self::AS_JSON => $response->asJson(),
+            default => $response
+        };
+    }
 
     /**
      * @param string|null $base_url
@@ -216,50 +239,28 @@ class MakeRequest
     }
 
     /**
+     * @param string|null $body_format
+     */
+    public function setBodyFormat(?string $body_format): void
+    {
+        $body_format = Str::of($body_format)->snake()->match('/(' . self::AS_FORM . '|' . self::AS_JSON .  ')/')->jsonSerialize();
+
+        $this->body_format = $body_format ?: null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getBodyFormat(): ?string
+    {
+        return $this->body_format;
+    }
+
+    /**
      * @return string
      */
     public function getCompleteUrl(): string
     {
         return $this->base_url . '/' . $this->append_url;
-    }
-
-    /**
-     * @return array|BaseJsonSerializable|Collection
-     */
-    public function getData(): BaseJsonSerializable|array|Collection
-    {
-        return $this->data;
-    }
-
-    /**
-     * @param BaseJsonSerializable|array|Collection|null $data
-     * @return MakeRequest
-     */
-    public function setData(BaseJsonSerializable|array|Collection|null $data): static
-    {
-        if ($data) {
-            $this->data = $data;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return array|BaseJsonSerializable|Collection
-     */
-    public function getHeaders(): BaseJsonSerializable|array|Collection
-    {
-        return $this->headers;
-    }
-
-    /**
-     * @param array|BaseJsonSerializable|Collection $headers
-     * @return MakeRequest
-     */
-    public function setHeaders(BaseJsonSerializable|array|Collection $headers): static
-    {
-        $this->headers = $headers;
-
-        return $this;
     }
 }

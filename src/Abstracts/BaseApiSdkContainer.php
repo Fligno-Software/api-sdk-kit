@@ -4,6 +4,7 @@ namespace Fligno\ApiSdkKit\Abstracts;
 
 use Fligno\ApiSdkKit\Containers\MakeRequest;
 use Fligno\ApiSdkKit\Interfaces\CanGetHealthCheckInterface;
+use Fligno\ApiSdkKit\Traits\UsesHttpFieldsTrait;
 
 /**
  * Class BaseApiSdkContainer
@@ -12,6 +13,8 @@ use Fligno\ApiSdkKit\Interfaces\CanGetHealthCheckInterface;
  */
 abstract class BaseApiSdkContainer
 {
+    use UsesHttpFieldsTrait;
+
     /**
      * @return bool
      */
@@ -32,6 +35,8 @@ abstract class BaseApiSdkContainer
      */
     public function getMakeRequest(): MakeRequest
     {
-        return makeRequest(rtrim(trim($this->getBaseUrl()), '/'));
+        return makeRequest(rtrim(trim($this->getBaseUrl()), '/'))
+            ->setHttpOptions($this->getHttpOptions())
+            ->setHeaders($this->getHeaders());
     }
 }
