@@ -4,9 +4,9 @@
  * @author James Carlo Luchavez <jamescarlo.luchavez@fligno.com>
  */
 
+use Fligno\StarterKit\Abstracts\BaseJsonSerializable;
 use Fligno\ApiSdkKit\Containers\MakeRequest;
-use GuzzleHttp\Promise\PromiseInterface;
-use Illuminate\Http\Client\Response;
+use Illuminate\Support\Collection;
 
 if (! function_exists('makeRequest'))
 {
@@ -31,5 +31,29 @@ if (! function_exists('make_request'))
     function make_request(?string $base_url): MakeRequest
     {
         return makeRequest($base_url);
+    }
+}
+
+if (! function_exists('normalizeToArray'))
+{
+    /**
+     * @param BaseJsonSerializable|Collection|array $data
+     * @return array
+     */
+    function normalizeToArray(BaseJsonSerializable|Collection|array $data): array
+    {
+        return MakeRequest::normalizeToArray($data);
+    }
+}
+
+if (! function_exists('normalize_to_array'))
+{
+    /**
+     * @param BaseJsonSerializable|Collection|array $data
+     * @return array
+     */
+    function normalize_to_array(BaseJsonSerializable|Collection|array $data): array
+    {
+        return normalizeToArray($data);
     }
 }
