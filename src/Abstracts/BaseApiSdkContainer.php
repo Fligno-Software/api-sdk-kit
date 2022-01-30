@@ -4,6 +4,7 @@ namespace Fligno\ApiSdkKit\Abstracts;
 
 use Fligno\ApiSdkKit\Containers\MakeRequest;
 use Fligno\ApiSdkKit\Interfaces\CanGetHealthCheckInterface;
+use Fligno\ApiSdkKit\Interfaces\CanGetNewApiKeysInterface;
 use Fligno\ApiSdkKit\Traits\UsesHttpFieldsTrait;
 
 /**
@@ -21,6 +22,14 @@ abstract class BaseApiSdkContainer
     public function canGetHealthCheck(): bool
     {
         return $this instanceof CanGetHealthCheckInterface;
+    }
+
+    /**
+     * @return bool
+     */
+    public function canGetNewApiKeys(): bool
+    {
+        return $this instanceof CanGetNewApiKeysInterface;
     }
 
     /***** GETTERS & SETTERS *****/

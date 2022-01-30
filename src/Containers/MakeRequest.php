@@ -97,7 +97,7 @@ class MakeRequest
             self::PUT => $response->put($url, $data),
             self::DELETE => $response->delete($url, $data),
             self::HEAD => $response->head($url, $data),
-            default => throw new RuntimeException('HTTP method not found.')
+            default => throw new RuntimeException('HTTP method not available.')
         };
     }
 
@@ -157,19 +157,11 @@ class MakeRequest
      */
     public static function normalizeToArray(BaseJsonSerializable|Collection|array $data): array
     {
-        if ($data instanceof Collection) {
-            $data = $data->toArray();
-        }
-        else if ($data instanceof BaseJsonSerializable) {
-            try {
-                $data = json_decode(json_encode($data, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
-            }
-            catch (JsonException $e) {
-                throw new \RuntimeException('Failed to convert object to array.');
-            }
+        if ($data instanceof Collection || $data instanceof BaseJsonSerializable) {
+            return $data->toArray();
         }
 
-        return array_filter_recursive($data);
+        return $data;
     }
 
     /***** SETTERS & GETTERS *****/
