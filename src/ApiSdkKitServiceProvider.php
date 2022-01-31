@@ -20,6 +20,8 @@ class ApiSdkKitServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        parent::register();
+
         $this->mergeConfigFrom(__DIR__.'/../config/api-sdk-kit.php', 'api-sdk-kit');
 
         // Register the service the package provides.

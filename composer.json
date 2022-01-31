@@ -24,11 +24,7 @@
     "autoload": {
         "psr-4": {
             "Fligno\\ApiSdkKit\\": "src/"
-        },
-        "files": [
-            "helpers/api-sdk-kit-helper.php",
-            "helpers/make-request-helper.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
