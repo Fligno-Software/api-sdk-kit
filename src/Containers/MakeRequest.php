@@ -10,7 +10,6 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
-use JsonException;
 use RuntimeException;
 
 /**
@@ -178,6 +177,8 @@ class MakeRequest
         // Prepare HttpOptions
 
         $options = self::normalizeToArray($this->getHttpOptions());
+
+        $options['verify'] = (bool) config('starter-kit.verify_ssl');
 
         // Prepare HTTP call
 
