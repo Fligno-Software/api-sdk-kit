@@ -2,6 +2,7 @@
 
 namespace Fligno\ApiSdkKit\Containers;
 
+use Closure;
 use Fligno\StarterKit\Abstracts\BaseJsonSerializable;
 use Fligno\ApiSdkKit\Traits\UsesHttpFieldsTrait;
 use GuzzleHttp\Promise\PromiseInterface;
@@ -47,11 +48,25 @@ class MakeRequest
     protected ?string $body_format;
 
     /**
+     * @var Collection
+     */
+    protected Collection $pre_request_processes;
+
+    /**
      * @param string|null $base_url
      */
     public function __construct(?string $base_url = null)
     {
         $this->setBaseUrl($base_url);
+
+        $this->pre_request_processes = collect([
+            fn(self $request) => $request->setData(self::normalizeToArray($request->getData())),
+            fn(self $request) => $request->setHeaders(self::normalizeToArray($request->getHeaders())),
+            fn(self $request) => $request->setHttpOptions(self::normalizeToArray($request->getHttpOptions())),
+            function(self $request) {
+                $request->getHttpOptions()['verify'] = (bool) config('starter-kit.verify_ssl');
+            }
+        ]);
     }
 
     /**
@@ -80,10 +95,6 @@ class MakeRequest
 
         $url = $this->getCompleteUrl();
 
-        // Prepare Data
-
-        $data = self::normalizeToArray($this->getData());
-
         // Prepare Guzzle HTTP
 
         $response = $this->getHttp();
@@ -91,11 +102,11 @@ class MakeRequest
         // Initiate HTTP call
 
         return match ($method) {
-            self::GET => $response->get($url, $data),
-            self::POST => $response->post($url, $data),
-            self::PUT => $response->put($url, $data),
-            self::DELETE => $response->delete($url, $data),
-            self::HEAD => $response->head($url, $data),
+            self::GET => $response->get($url, $this->getData()),
+            self::POST => $response->post($url, $this->getData()),
+            self::PUT => $response->put($url, $this->getData()),
+            self::DELETE => $response->delete($url, $this->getData()),
+            self::HEAD => $response->head($url, $this->getData()),
             default => throw new RuntimeException('HTTP method not available.')
         };
     }
@@ -170,19 +181,11 @@ class MakeRequest
      */
     public function getHttp(): PendingRequest
     {
-        // Prepare Headers
-
-        $headers = self::normalizeToArray($this->getHeaders());
-
-        // Prepare HttpOptions
-
-        $options = self::normalizeToArray($this->getHttpOptions());
-
-        $options['verify'] = (bool) config('starter-kit.verify_ssl');
+        $this->pre_request_processes->each(fn($closure) => $closure($this));
 
         // Prepare HTTP call
 
-        $response = Http::withHeaders($headers)->withOptions($options);
+        $response = Http::withHeaders($this->getHeaders())->withOptions($this->getHttpOptions());
 
         // Prepare Body Format
 
@@ -255,5 +258,24 @@ class MakeRequest
     public function getCompleteUrl(): string
     {
         return $this->base_url . '/' . $this->append_url;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getPreRequestProcesses(): Collection
+    {
+        return $this->pre_request_processes;
+    }
+
+    /***** OTHER FUNCTIONS *****/
+
+    /**
+     * @param Closure|Closure[] $closure
+     * @return void
+     */
+    public function addToPreRequestProcesses(Closure|array $closure): void
+    {
+        $this->pre_request_processes = $this->pre_request_processes->merge(collect($closure));
     }
 }
