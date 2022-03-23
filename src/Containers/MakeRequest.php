@@ -3,9 +3,11 @@
 namespace Fligno\ApiSdkKit\Containers;
 
 use Closure;
+use Fligno\ApiSdkKit\Models\AuditLog;
 use Fligno\StarterKit\Abstracts\BaseJsonSerializable;
 use Fligno\ApiSdkKit\Traits\UsesHttpFieldsTrait;
 use GuzzleHttp\Promise\PromiseInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
@@ -71,11 +73,12 @@ class MakeRequest
 
     /**
      * @param string $method
-     * @param string $append_url
+     * @param string|null $append_url
      * @param string|null $body_format
-     * @return PromiseInterface|Response
+     * @param bool $return_as_model
+     * @return PromiseInterface|Response|Builder|AuditLog
      */
-    public function execute(string $method, string $append_url = '', string $body_format = null): PromiseInterface|Response
+    public function execute(string $method, ?string $append_url = '', string $body_format = null, bool $return_as_model = true): PromiseInterface|Response|Builder|AuditLog
     {
         // Prepare URL
 
@@ -101,7 +104,7 @@ class MakeRequest
 
         // Initiate HTTP call
 
-        return match ($method) {
+        $result = match ($method) {
             self::GET => $response->get($url, $this->getData()),
             self::POST => $response->post($url, $this->getData()),
             self::PUT => $response->put($url, $this->getData()),
@@ -109,56 +112,70 @@ class MakeRequest
             self::HEAD => $response->head($url, $this->getData()),
             default => throw new RuntimeException('HTTP method not available.')
         };
+
+        if ($return_as_model) {
+            return AuditLog::query()->create([
+                'status' => $result->status(),
+                'data' => $result->collect(),
+                'headers' => $result->headers()]);
+        }
+
+        return $result;
     }
 
     /**
-     * @param string $append_url
+     * @param string|null $append_url
      * @param string|null $body_format
-     * @return PromiseInterface|Response
+     * @param bool $return_as_model
+     * @return PromiseInterface|Response|Builder|AuditLog
      */
-    public function executeHead(string $append_url = '', string $body_format = null): PromiseInterface|Response
+    public function executeHead(?string $append_url = '', string $body_format = null, bool $return_as_model = true): PromiseInterface|Response|Builder|AuditLog
     {
-        return $this->execute(self::HEAD, $append_url, $body_format);
+        return $this->execute(self::HEAD, $append_url, $body_format, $return_as_model);
     }
 
     /**
-     * @param string $append_url
+     * @param string|null $append_url
      * @param string|null $body_format
-     * @return PromiseInterface|Response
+     * @param bool $return_as_model
+     * @return PromiseInterface|Response|Builder|AuditLog
      */
-    public function executeGet(string $append_url = '', string $body_format = null): PromiseInterface|Response
+    public function executeGet(?string $append_url = '', string $body_format = null, bool $return_as_model = true): PromiseInterface|Response|Builder|AuditLog
     {
-        return $this->execute(self::GET, $append_url, $body_format);
+        return $this->execute(self::GET, $append_url, $body_format, $return_as_model);
     }
 
     /**
-     * @param string $append_url
+     * @param string|null $append_url
      * @param string|null $body_format
-     * @return PromiseInterface|Response
+     * @param bool $return_as_model
+     * @return PromiseInterface|Response|Builder|AuditLog
      */
-    public function executePost(string $append_url = '', string $body_format = null): PromiseInterface|Response
+    public function executePost(?string $append_url = '', string $body_format = null, bool $return_as_model = true): PromiseInterface|Response|Builder|AuditLog
     {
-        return $this->execute(self::POST, $append_url, $body_format);
+        return $this->execute(self::POST, $append_url, $body_format, $return_as_model);
     }
 
     /**
-     * @param string $append_url
+     * @param string|null $append_url
      * @param string|null $body_format
-     * @return PromiseInterface|Response
+     * @param bool $return_as_model
+     * @return PromiseInterface|Response|Builder|AuditLog
      */
-    public function executePut(string $append_url = '', string $body_format = null): PromiseInterface|Response
+    public function executePut(?string $append_url = '', string $body_format = null, bool $return_as_model = true): PromiseInterface|Response|Builder|AuditLog
     {
-        return $this->execute(self::PUT, $append_url, $body_format);
+        return $this->execute(self::PUT, $append_url, $body_format, $return_as_model);
     }
 
     /**
-     * @param string $append_url
+     * @param string|null $append_url
      * @param string|null $body_format
-     * @return PromiseInterface|Response
+     * @param bool $return_as_model
+     * @return PromiseInterface|Response|Builder|AuditLog
      */
-    public function executeDelete(string $append_url = '', string $body_format = null): PromiseInterface|Response
+    public function executeDelete(?string $append_url = '', string $body_format = null, bool $return_as_model = true): PromiseInterface|Response|Builder|AuditLog
     {
-        return $this->execute(self::DELETE, $append_url, $body_format);
+        return $this->execute(self::DELETE, $append_url, $body_format, $return_as_model);
     }
 
     /**
