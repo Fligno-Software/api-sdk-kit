@@ -61,25 +61,31 @@ class MakeRequest
     {
         $this->setBaseUrl($base_url);
 
-        $this->pre_request_processes = collect([
-            fn(self $request) => $request->setData(self::normalizeToArray($request->getData())),
-            fn(self $request) => $request->setHeaders(self::normalizeToArray($request->getHeaders())),
-            fn(self $request) => $request->setHttpOptions(self::normalizeToArray($request->getHttpOptions())),
-            function(self $request) {
-                $request->getHttpOptions()['verify'] = (bool) config('starter-kit.verify_ssl');
-            }
-        ]);
+        $this->pre_request_processes = collect(
+            [
+                fn(self $request) => $request->setData(self::normalizeToArray($request->getData())),
+                fn(self $request) => $request->setHeaders(self::normalizeToArray($request->getHeaders())),
+                fn(self $request) => $request->setHttpOptions(self::normalizeToArray($request->getHttpOptions())),
+                function (self $request) {
+                    $request->getHttpOptions()['verify'] = (bool) config('starter-kit.verify_ssl');
+                }
+            ]
+        );
     }
 
     /**
-     * @param string $method
-     * @param string|null $append_url
-     * @param string|null $body_format
-     * @param bool $return_as_model
+     * @param  string      $method
+     * @param  string|null $append_url
+     * @param  string|null $body_format
+     * @param  bool        $return_as_model
      * @return PromiseInterface|Response|Builder|AuditLog
      */
-    public function execute(string $method, ?string $append_url = '', string $body_format = null, bool $return_as_model = true): PromiseInterface|Response|Builder|AuditLog
-    {
+    public function execute(
+        string $method,
+        ?string $append_url = '',
+        string $body_format = null,
+        bool $return_as_model = true
+    ): PromiseInterface|Response|Builder|AuditLog {
         // Prepare URL
 
         if (! ($this->getBaseUrl())) {
@@ -114,72 +120,89 @@ class MakeRequest
         };
 
         if ($return_as_model) {
-            return AuditLog::query()->create([
+            return AuditLog::query()->create(
+                [
                 'status' => $result->status(),
                 'data' => $result->collect(),
-                'headers' => $result->headers()]);
+                'headers' => $result->headers()]
+            );
         }
 
         return $result;
     }
 
     /**
-     * @param string|null $append_url
-     * @param string|null $body_format
-     * @param bool $return_as_model
+     * @param  string|null $append_url
+     * @param  string|null $body_format
+     * @param  bool        $return_as_model
      * @return PromiseInterface|Response|Builder|AuditLog
      */
-    public function executeHead(?string $append_url = '', string $body_format = null, bool $return_as_model = true): PromiseInterface|Response|Builder|AuditLog
-    {
+    public function executeHead(
+        ?string $append_url = '',
+        string $body_format = null,
+        bool $return_as_model = true
+    ): PromiseInterface|Response|Builder|AuditLog {
         return $this->execute(self::HEAD, $append_url, $body_format, $return_as_model);
     }
 
     /**
-     * @param string|null $append_url
-     * @param string|null $body_format
-     * @param bool $return_as_model
+     * @param  string|null $append_url
+     * @param  string|null $body_format
+     * @param  bool        $return_as_model
      * @return PromiseInterface|Response|Builder|AuditLog
      */
-    public function executeGet(?string $append_url = '', string $body_format = null, bool $return_as_model = true): PromiseInterface|Response|Builder|AuditLog
-    {
+    public function executeGet(
+        ?string $append_url = '',
+        string $body_format = null,
+        bool $return_as_model = true
+    ): PromiseInterface|Response|Builder|AuditLog {
         return $this->execute(self::GET, $append_url, $body_format, $return_as_model);
     }
 
     /**
-     * @param string|null $append_url
-     * @param string|null $body_format
-     * @param bool $return_as_model
+     * @param  string|null $append_url
+     * @param  string|null $body_format
+     * @param  bool        $return_as_model
      * @return PromiseInterface|Response|Builder|AuditLog
      */
-    public function executePost(?string $append_url = '', string $body_format = null, bool $return_as_model = true): PromiseInterface|Response|Builder|AuditLog
-    {
+    public function executePost(
+        ?string $append_url = '',
+        string $body_format = null,
+        bool $return_as_model = true
+    ): PromiseInterface|Response|Builder|AuditLog {
         return $this->execute(self::POST, $append_url, $body_format, $return_as_model);
     }
 
     /**
-     * @param string|null $append_url
-     * @param string|null $body_format
-     * @param bool $return_as_model
+     * @param  string|null $append_url
+     * @param  string|null $body_format
+     * @param  bool        $return_as_model
      * @return PromiseInterface|Response|Builder|AuditLog
      */
-    public function executePut(?string $append_url = '', string $body_format = null, bool $return_as_model = true): PromiseInterface|Response|Builder|AuditLog
-    {
+    public function executePut(
+        ?string $append_url = '',
+        string $body_format = null,
+        bool $return_as_model = true
+    ): PromiseInterface|Response|Builder|AuditLog {
         return $this->execute(self::PUT, $append_url, $body_format, $return_as_model);
     }
 
     /**
-     * @param string|null $append_url
-     * @param string|null $body_format
-     * @param bool $return_as_model
+     * @param  string|null $append_url
+     * @param  string|null $body_format
+     * @param  bool        $return_as_model
      * @return PromiseInterface|Response|Builder|AuditLog
      */
-    public function executeDelete(?string $append_url = '', string $body_format = null, bool $return_as_model = true): PromiseInterface|Response|Builder|AuditLog
-    {
+    public function executeDelete(
+        ?string $append_url = '',
+        string $body_format = null,
+        bool $return_as_model = true
+    ): PromiseInterface|Response|Builder|AuditLog {
         return $this->execute(self::DELETE, $append_url, $body_format, $return_as_model);
     }
 
     /**
-     * @param BaseJsonSerializable|Collection|array $data
+     * @param  BaseJsonSerializable|Collection|array $data
      * @return array
      */
     public static function normalizeToArray(BaseJsonSerializable|Collection|array $data): array
@@ -191,7 +214,9 @@ class MakeRequest
         return $data;
     }
 
-    /***** SETTERS & GETTERS *****/
+    /*****
+     * SETTERS & GETTERS
+     *****/
 
     /**
      * @return PendingRequest
@@ -214,7 +239,7 @@ class MakeRequest
     }
 
     /**
-     * @param string|null $base_url
+     * @param  string|null $base_url
      * @return MakeRequest
      */
     public function setBaseUrl(?string $base_url): static
@@ -233,7 +258,7 @@ class MakeRequest
     }
 
     /**
-     * @param string|null $append_url
+     * @param  string|null $append_url
      * @return MakeRequest
      */
     public function setAppendUrl(?string $append_url): static
@@ -256,7 +281,8 @@ class MakeRequest
      */
     public function setBodyFormat(?string $body_format): void
     {
-        $body_format = Str::of($body_format)->snake()->match('/(' . self::AS_FORM . '|' . self::AS_JSON .  ')/')->jsonSerialize();
+        $body_format = Str::of($body_format)->snake()->match('/(' . self::AS_FORM . '|' . self::AS_JSON .  ')/')
+            ->jsonSerialize();
 
         $this->body_format = $body_format ?: null;
     }
@@ -285,10 +311,12 @@ class MakeRequest
         return $this->pre_request_processes;
     }
 
-    /***** OTHER FUNCTIONS *****/
+    /*****
+     * OTHER FUNCTIONS
+     *****/
 
     /**
-     * @param Closure|Closure[] $closure
+     * @param  Closure|Closure[] $closure
      * @return void
      */
     public function addToPreRequestProcesses(Closure|array $closure): void

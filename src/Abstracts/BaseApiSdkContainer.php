@@ -32,7 +32,9 @@ abstract class BaseApiSdkContainer
         return $this instanceof CanGetNewApiKeysInterface;
     }
 
-    /***** GETTERS & SETTERS *****/
+    /*****
+     * GETTERS & SETTERS
+     *****/
 
     /**
      * @return string

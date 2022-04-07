@@ -16,8 +16,10 @@ use Illuminate\Support\Collection;
 interface CanGetHealthCheckInterface
 {
     /**
-     * @param BaseJsonSerializable|Collection|array|null $data
+     * @param  BaseJsonSerializable|Collection|array|null $data
      * @return Model|BaseJsonSerializable|PromiseInterface|Response|Collection|array
      */
-    public function getHealthCheck(BaseJsonSerializable|Collection|array $data = null): Model|BaseJsonSerializable|PromiseInterface|Response|Collection|array;
+    public function getHealthCheck(
+        BaseJsonSerializable|Collection|array $data = null
+    ): Model|BaseJsonSerializable|PromiseInterface|Response|Collection|array;
 }

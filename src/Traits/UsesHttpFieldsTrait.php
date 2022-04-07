@@ -27,7 +27,9 @@ trait UsesHttpFieldsTrait
      */
     protected BaseJsonSerializable|Collection|array $httpOptions = [];
 
-    /***** SETTERS & GETTERS *****/
+    /*****
+     * SETTERS & GETTERS
+     *****/
 
     /**
      * @return array|BaseJsonSerializable|Collection
@@ -38,7 +40,7 @@ trait UsesHttpFieldsTrait
     }
 
     /**
-     * @param BaseJsonSerializable|array|Collection|null $data
+     * @param  BaseJsonSerializable|array|Collection|null $data
      * @return static
      */
     public function setData(BaseJsonSerializable|array|Collection|null $data): static
@@ -59,7 +61,7 @@ trait UsesHttpFieldsTrait
     }
 
     /**
-     * @param array|BaseJsonSerializable|Collection $headers
+     * @param  array|BaseJsonSerializable|Collection $headers
      * @return static
      */
     public function setHeaders(BaseJsonSerializable|array|Collection $headers): static
@@ -78,7 +80,7 @@ trait UsesHttpFieldsTrait
     }
 
     /**
-     * @param array|BaseJsonSerializable|Collection $httpOptions
+     * @param  array|BaseJsonSerializable|Collection $httpOptions
      * @return static
      */
     public function setHttpOptions(BaseJsonSerializable|array|Collection $httpOptions): static

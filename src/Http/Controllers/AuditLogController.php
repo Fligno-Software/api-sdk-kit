@@ -37,14 +37,14 @@ class AuditLogController extends Controller
      *
      * @group AuditLog Management
      *
-     * @param IndexAuditLogRequest $request
+     * @param  IndexAuditLogRequest $request
      * @return JsonResponse
      */
     public function index(IndexAuditLogRequest $request): JsonResponse
     {
         $data = new AuditLog;
 
-        if ($request->has('full_data') === TRUE) {
+        if ($request->has('full_data') === true) {
             $data = $data->get();
         } else {
             $data = $data->simplePaginate($request->get('per_page', 15));
@@ -64,7 +64,7 @@ class AuditLogController extends Controller
      *
      * @group AuditLog Management
      *
-     * @param Request $request
+     * @param  Request $request
      * @return JsonResponse
      */
     public function create(Request $request): JsonResponse
@@ -87,7 +87,7 @@ class AuditLogController extends Controller
      *
      * @group AuditLog Management
      *
-     * @param StoreAuditLogRequest $request
+     * @param  StoreAuditLogRequest $request
      * @return JsonResponse
      */
     public function store(StoreAuditLogRequest $request): JsonResponse
@@ -110,8 +110,8 @@ class AuditLogController extends Controller
      *
      * @group AuditLog Management
      *
-     * @param ShowAuditLogRequest $request
-     * @param AuditLog $auditLog
+     * @param  ShowAuditLogRequest $request
+     * @param  AuditLog            $auditLog
      * @return JsonResponse
      */
     public function show(ShowAuditLogRequest $request, AuditLog $auditLog): JsonResponse
@@ -130,8 +130,8 @@ class AuditLogController extends Controller
      *
      * @group AuditLog Management
      *
-     * @param Request $request
-     * @param AuditLog $auditLog
+     * @param  Request  $request
+     * @param  AuditLog $auditLog
      * @return JsonResponse
      */
     public function edit(Request $request, AuditLog $auditLog): JsonResponse
@@ -152,8 +152,8 @@ class AuditLogController extends Controller
      *
      * @group AuditLog Management
      *
-     * @param UpdateAuditLogRequest $request
-     * @param AuditLog $auditLog
+     * @param  UpdateAuditLogRequest $request
+     * @param  AuditLog              $auditLog
      * @return JsonResponse
      */
     public function update(UpdateAuditLogRequest $request, AuditLog $auditLog): JsonResponse
@@ -174,8 +174,8 @@ class AuditLogController extends Controller
      *
      * @group AuditLog Management
      *
-     * @param DeleteAuditLogRequest $request
-     * @param AuditLog $auditLog
+     * @param  DeleteAuditLogRequest $request
+     * @param  AuditLog              $auditLog
      * @return JsonResponse
      */
     public function destroy(DeleteAuditLogRequest $request, AuditLog $auditLog): JsonResponse
@@ -196,8 +196,8 @@ class AuditLogController extends Controller
      *
      * @group AuditLog Management
      *
-     * @param RestoreAuditLogRequest $request
-     * @param $auditLog
+     * @param  RestoreAuditLogRequest $request
+     * @param  $auditLog
      * @return JsonResponse
      */
     public function restore(RestoreAuditLogRequest $request, $auditLog): JsonResponse

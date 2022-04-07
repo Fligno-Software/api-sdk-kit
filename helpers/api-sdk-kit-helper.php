@@ -6,8 +6,7 @@
 
 use Fligno\ApiSdkKit\ApiSdkKit;
 
-if (! function_exists('apiSdkKit'))
-{
+if (! function_exists('apiSdkKit')) {
     /**
      * @return ApiSdkKit
      */
@@ -17,8 +16,7 @@ if (! function_exists('apiSdkKit'))
     }
 }
 
-if (! function_exists('api_sdk_kit'))
-{
+if (! function_exists('api_sdk_kit')) {
     /**
      * @return ApiSdkKit
      */

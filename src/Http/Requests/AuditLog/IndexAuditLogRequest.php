@@ -18,7 +18,7 @@ class IndexAuditLogRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return TRUE;
+        return true;
     }
 
     /**
@@ -40,9 +40,10 @@ class IndexAuditLogRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $this->merge([
+        $this->merge(
+            [
             //
-        ]);
+            ]
+        );
     }
 }
-

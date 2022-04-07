@@ -25,4 +25,3 @@ trait HasAuditLogFactoryTrait
         return AuditLogFactory::new();
     }
 }
-
