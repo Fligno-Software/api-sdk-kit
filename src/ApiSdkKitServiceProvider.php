@@ -9,7 +9,7 @@ use Fligno\StarterKit\Providers\BaseStarterKitServiceProvider as ServiceProvider
  * Class ApiSdkKitServiceProvider
  *
  * @author James Carlo Luchavez <jamescarlo.luchavez@fligno.com>
- * @since 2022-01-20
+ * @since  2022-01-20
  */
 class ApiSdkKitServiceProvider extends ServiceProvider
 {
@@ -25,14 +25,20 @@ class ApiSdkKitServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/api-sdk-kit.php', 'api-sdk-kit');
 
         // Register the service the package provides.
-        $this->app->singleton('api-sdk-kit', function ($app) {
-            return new ApiSdkKit;
-        });
+        $this->app->singleton(
+            'api-sdk-kit',
+            function ($app) {
+                return new ApiSdkKit;
+            }
+        );
 
         // Register the MakeRequest Service Container
-        $this->app->bind('make-request', function ($app, $params) {
-            return new MakeRequest($params['base_url'] ?? null);
-        });
+        $this->app->bind(
+            'make-request',
+            function ($app, $params) {
+                return new MakeRequest($params['base_url'] ?? null);
+            }
+        );
     }
 
     /**
@@ -53,9 +59,12 @@ class ApiSdkKitServiceProvider extends ServiceProvider
     protected function bootForConsole(): void
     {
         // Publishing the configuration file.
-        $this->publishes([
+        $this->publishes(
+            [
             __DIR__.'/../config/api-sdk-kit.php' => config_path('api-sdk-kit.php'),
-        ], 'api-sdk-kit.config');
+            ],
+            'api-sdk-kit.config'
+        );
 
         // Publishing the views.
         /*$this->publishes([

@@ -16,8 +16,10 @@ use Illuminate\Support\Collection;
 interface CanGetNewApiKeysInterface
 {
     /**
-     * @param BaseJsonSerializable|Collection|array|null $data
+     * @param  BaseJsonSerializable|Collection|array|null $data
      * @return Model|BaseJsonSerializable|PromiseInterface|Response|Collection|array
      */
-    public function getNewApiKeys(BaseJsonSerializable|Collection|array $data = null): Model|BaseJsonSerializable|PromiseInterface|Response|Collection|array;
+    public function getNewApiKeys(
+        BaseJsonSerializable|Collection|array $data = null
+    ): Model|BaseJsonSerializable|PromiseInterface|Response|Collection|array;
 }

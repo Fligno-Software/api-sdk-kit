@@ -2,8 +2,6 @@
 
 namespace Fligno\ApiSdkKit\Abstracts;
 
-
-
 use Fligno\StarterKit\Providers\BaseStarterKitServiceProvider as ServiceProvider;
 
 /**
@@ -22,5 +20,4 @@ abstract class BaseApiSdkServiceProvider extends ServiceProvider
     {
         parent::boot();
     }
-
 }

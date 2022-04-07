@@ -53,7 +53,9 @@ class AuditLog extends Model
         'data' => AsCollection::class,
     ];
 
-    /******** RELATIONSHIPS ********/
+    /********
+     * RELATIONSHIPS
+     ********/
 
     /**
      * @return MorphTo
@@ -75,11 +77,15 @@ class AuditLog extends Model
         return null;
     }
 
-    /***** ACCESSORS & MUTATORS *****/
+    /*****
+     * ACCESSORS & MUTATORS
+     *****/
 
     //
 
-    /******** OTHER METHODS ********/
+    /********
+     * OTHER METHODS
+     ********/
 
     /**
      * Determine if the request was successful.

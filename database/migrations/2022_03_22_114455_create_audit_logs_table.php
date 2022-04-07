@@ -26,17 +26,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('audit_logs', static function (Blueprint $table) {
-            $table->id();
-            $table->uuid('uuid')->unique();
-            $table->foreignIdFor(starterKit()->getUserModel())->nullable()->constrained();
-            $table->nullableMorphs('audit_loggable');
-            $table->unsignedSmallInteger('status')->nullable();
-            $table->text('headers')->nullable();
-            $table->text('data')->nullable();
-            $table->softDeletes();
-            $table->timestamps();
-        });
+        Schema::create(
+            'audit_logs',
+            static function (Blueprint $table) {
+                $table->id();
+                $table->uuid('uuid')->unique();
+                $table->foreignIdFor(starterKit()->getUserModel())->nullable()->constrained();
+                $table->nullableMorphs('audit_loggable');
+                $table->unsignedSmallInteger('status')->nullable();
+                $table->text('headers')->nullable();
+                $table->text('data')->nullable();
+                $table->softDeletes();
+                $table->timestamps();
+            }
+        );
     }
 
     /**
@@ -49,4 +52,3 @@ return new class extends Migration
         Schema::dropIfExists('audit_logs');
     }
 };
-
