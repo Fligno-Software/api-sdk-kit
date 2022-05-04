@@ -33,9 +33,11 @@ return new class extends Migration
                 $table->uuid('uuid')->unique();
                 $table->foreignIdFor(starterKit()->getUserModel())->nullable()->constrained();
                 $table->nullableMorphs('audit_loggable');
-                $table->unsignedSmallInteger('status')->nullable();
-                $table->text('headers')->nullable();
-                $table->text('data')->nullable();
+                $table->string('url');
+                $table->string('method');
+                $table->binary('headers')->nullable();
+                $table->binary('data')->nullable();
+                $table->unsignedSmallInteger('status');
                 $table->softDeletes();
                 $table->timestamps();
             }

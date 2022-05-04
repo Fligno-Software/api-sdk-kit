@@ -3,8 +3,9 @@
 namespace Fligno\ApiSdkKit\Models;
 
 use Fligno\ApiSdkKit\Traits\HasAuditLogFactoryTrait;
+use Fligno\StarterKit\Casts\AsCompressedArrayCast;
+use Fligno\StarterKit\Casts\AsCompressedCollectionCast;
 use Fligno\StarterKit\Traits\UsesUUIDTrait;
-use Illuminate\Database\Eloquent\Casts\AsCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -42,15 +43,17 @@ class AuditLog extends Model
      */
     protected $fillable = [
         'user_id',
-        'status',
+        'url',
+        'method',
         'headers',
         'data',
+        'status',
         'deleted_at',
     ];
 
     protected $casts = [
-        'headers' => 'array',
-        'data' => AsCollection::class,
+        'headers' => AsCompressedArrayCast::class,
+        'data' => AsCompressedCollectionCast::class,
     ];
 
     /********

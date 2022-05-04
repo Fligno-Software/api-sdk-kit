@@ -21,7 +21,7 @@ abstract class BaseApiSdkContainer
      */
     public function canGetHealthCheck(): bool
     {
-        return $this instanceof CanGetHealthCheckInterface;
+        return $this instanceof CanGetHealthCheckInterface || method_exists($this, 'getHealthCheck');
     }
 
     /**
@@ -29,7 +29,7 @@ abstract class BaseApiSdkContainer
      */
     public function canGetNewApiKeys(): bool
     {
-        return $this instanceof CanGetNewApiKeysInterface;
+        return $this instanceof CanGetNewApiKeysInterface || method_exists($this, 'getNewApiKeys');
     }
 
     /*****
@@ -47,7 +47,7 @@ abstract class BaseApiSdkContainer
     public function getMakeRequest(): MakeRequest
     {
         return makeRequest(rtrim(trim($this->getBaseUrl()), '/'))
-            ->setHttpOptions($this->getHttpOptions())
-            ->setHeaders($this->getHeaders());
+            ->httpOptions($this->getHttpOptions())
+            ->headers($this->getHeaders());
     }
 }

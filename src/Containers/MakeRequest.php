@@ -3,6 +3,7 @@
 namespace Fligno\ApiSdkKit\Containers;
 
 use Closure;
+use Fligno\ApiSdkKit\DataFactories\AuditLogDataFactory;
 use Fligno\ApiSdkKit\Models\AuditLog;
 use Fligno\StarterKit\Abstracts\BaseJsonSerializable;
 use Fligno\ApiSdkKit\Traits\UsesHttpFieldsTrait;
@@ -120,12 +121,13 @@ class MakeRequest
         };
 
         if ($return_as_model) {
-            return AuditLog::query()->create(
-                [
-                'status' => $result->status(),
-                'data' => $result->collect(),
-                'headers' => $result->headers()]
-            );
+            $log = new AuditLogDataFactory;
+            $log->url = $url;
+            $log->method = $method;
+            $log->status = $result->status();
+            $log->data = $result->collect();
+            $log->headers = $result->headers();
+            return $log->create();
         }
 
         return $result;
@@ -201,19 +203,6 @@ class MakeRequest
         return $this->execute(self::DELETE, $append_url, $body_format, $return_as_model);
     }
 
-    /**
-     * @param  BaseJsonSerializable|Collection|array $data
-     * @return array
-     */
-    public static function normalizeToArray(BaseJsonSerializable|Collection|array $data): array
-    {
-        if ($data instanceof Collection || $data instanceof BaseJsonSerializable) {
-            return $data->toArray();
-        }
-
-        return $data;
-    }
-
     /*****
      * SETTERS & GETTERS
      *****/
@@ -227,7 +216,9 @@ class MakeRequest
 
         // Prepare HTTP call
 
-        $response = Http::withHeaders($this->getHeaders())->withOptions($this->getHttpOptions());
+        $response = Http::withUserAgent(config('api-sdk-kit.user_agent'))
+            ->withHeaders($this->getHeaders())
+            ->withOptions($this->getHttpOptions());
 
         // Prepare Body Format
 
@@ -240,7 +231,7 @@ class MakeRequest
 
     /**
      * @param  string|null $base_url
-     * @return MakeRequest
+     * @return static
      */
     public function setBaseUrl(?string $base_url): static
     {
@@ -259,7 +250,7 @@ class MakeRequest
 
     /**
      * @param  string|null $append_url
-     * @return MakeRequest
+     * @return static
      */
     public function setAppendUrl(?string $append_url): static
     {
@@ -304,6 +295,17 @@ class MakeRequest
     }
 
     /**
+     * @param  Closure|Closure[] $closure
+     * @return static
+     */
+    public function addToPreRequestProcesses(Closure|array $closure): static
+    {
+        $this->pre_request_processes = $this->pre_request_processes->merge(collect($closure));
+
+        return $this;
+    }
+
+    /**
      * @return Collection
      */
     public function getPreRequestProcesses(): Collection
@@ -316,11 +318,15 @@ class MakeRequest
      *****/
 
     /**
-     * @param  Closure|Closure[] $closure
-     * @return void
+     * @param  BaseJsonSerializable|Collection|array $data
+     * @return array
      */
-    public function addToPreRequestProcesses(Closure|array $closure): void
+    public static function normalizeToArray(BaseJsonSerializable|Collection|array $data): array
     {
-        $this->pre_request_processes = $this->pre_request_processes->merge(collect($closure));
+        if ($data instanceof Collection || $data instanceof BaseJsonSerializable) {
+            return $data->toArray();
+        }
+
+        return $data;
     }
 }
