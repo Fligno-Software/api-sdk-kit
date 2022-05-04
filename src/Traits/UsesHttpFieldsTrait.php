@@ -40,14 +40,21 @@ trait UsesHttpFieldsTrait
     }
 
     /**
-     * @param  BaseJsonSerializable|array|Collection|null $data
+     * @param  BaseJsonSerializable|array|Collection $data
+     * @return void
+     */
+    public function setData(BaseJsonSerializable|array|Collection $data): void
+    {
+        $this->data = $data;
+    }
+
+    /**
+     * @param  BaseJsonSerializable|array|Collection $data
      * @return static
      */
-    public function setData(BaseJsonSerializable|array|Collection|null $data): static
+    public function data(BaseJsonSerializable|array|Collection $data): static
     {
-        if ($data) {
-            $this->data = $data;
-        }
+        $this->setData($data);
 
         return $this;
     }
@@ -62,11 +69,20 @@ trait UsesHttpFieldsTrait
 
     /**
      * @param  array|BaseJsonSerializable|Collection $headers
-     * @return static
+     * @return void
      */
-    public function setHeaders(BaseJsonSerializable|array|Collection $headers): static
+    public function setHeaders(BaseJsonSerializable|array|Collection $headers): void
     {
         $this->headers = $headers;
+    }
+
+    /**
+     * @param  array|BaseJsonSerializable|Collection $headers
+     * @return static
+     */
+    public function headers(BaseJsonSerializable|array|Collection $headers): static
+    {
+        $this->setHeaders($headers);
 
         return $this;
     }
@@ -80,12 +96,21 @@ trait UsesHttpFieldsTrait
     }
 
     /**
+     * @param array|BaseJsonSerializable|Collection $httpOptions
+     * @return void
+     */
+    public function setHttpOptions(BaseJsonSerializable|array|Collection $httpOptions): void
+    {
+        $this->httpOptions = $httpOptions;
+    }
+
+    /**
      * @param  array|BaseJsonSerializable|Collection $httpOptions
      * @return static
      */
-    public function setHttpOptions(BaseJsonSerializable|array|Collection $httpOptions): static
+    public function httpOptions(BaseJsonSerializable|array|Collection $httpOptions): static
     {
-        $this->httpOptions = $httpOptions;
+        $this->setHttpOptions($httpOptions);
 
         return $this;
     }

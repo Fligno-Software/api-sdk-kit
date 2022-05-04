@@ -2,8 +2,14 @@
 
 namespace Fligno\ApiSdkKit;
 
+use Fligno\ApiSdkKit\Console\Commands\DeleteOrphanAuditLogsCommand;
 use Fligno\ApiSdkKit\Containers\MakeRequest;
+use Fligno\ApiSdkKit\Models\AuditLog;
+use Fligno\ApiSdkKit\Policies\AuditLogPolicy;
+use Fligno\ApiSdkKit\Repositories\AuditLogRepository;
+use Fligno\StarterKit\Interfaces\ProviderConsoleKernelInterface;
 use Fligno\StarterKit\Providers\BaseStarterKitServiceProvider as ServiceProvider;
+use Illuminate\Console\Scheduling\Schedule;
 
 /**
  * Class ApiSdkKitServiceProvider
@@ -11,8 +17,29 @@ use Fligno\StarterKit\Providers\BaseStarterKitServiceProvider as ServiceProvider
  * @author James Carlo Luchavez <jamescarlo.luchavez@fligno.com>
  * @since  2022-01-20
  */
-class ApiSdkKitServiceProvider extends ServiceProvider
+class ApiSdkKitServiceProvider extends ServiceProvider implements ProviderConsoleKernelInterface
 {
+    /**
+     * @var array|string[]
+     */
+    protected array $commands = [
+        DeleteOrphanAuditLogsCommand::class,
+    ];
+
+    /**
+     * @var array|string[]
+     */
+    protected array $policy_map = [
+        AuditLogPolicy::class => AuditLog::class
+    ];
+
+    /**
+     * @var array|string[]
+     */
+    protected array $repository_map = [
+        AuditLogRepository::class => AuditLog::class
+    ];
+
     /**
      * Register any package services.
      *
@@ -20,8 +47,6 @@ class ApiSdkKitServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        parent::register();
-
         $this->mergeConfigFrom(__DIR__.'/../config/api-sdk-kit.php', 'api-sdk-kit');
 
         // Register the service the package provides.
@@ -82,6 +107,19 @@ class ApiSdkKitServiceProvider extends ServiceProvider
         ], 'api-sdk-kit.views');*/
 
         // Registering package commands.
-        // $this->commands([]);
+         $this->commands($this->commands);
+    }
+
+    /**
+     * @param Schedule $schedule
+     * @return void
+     */
+    public function registerToConsoleKernel(Schedule $schedule): void
+    {
+        $schedule->command(DeleteOrphanAuditLogsCommand::class)
+            ->hourly()
+            ->runInBackground()
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 }
