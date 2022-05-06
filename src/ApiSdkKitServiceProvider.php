@@ -117,6 +117,7 @@ class ApiSdkKitServiceProvider extends ServiceProvider implements ProviderConsol
     public function registerToConsoleKernel(Schedule $schedule): void
     {
         $schedule->command(DeleteOrphanAuditLogsCommand::class)
+            ->name('ask:delete-orphan-logs')
             ->hourly()
             ->runInBackground()
             ->withoutOverlapping()
