@@ -13,30 +13,30 @@ use Illuminate\Support\Collection;
 trait UsesHttpFieldsTrait
 {
     /**
-     * @var BaseJsonSerializable|Collection|array
+     * @var array
      */
-    protected BaseJsonSerializable|Collection|array $data = [];
+    protected array $data = [];
 
     /***
-     * @var BaseJsonSerializable|Collection|array
+     * @var array
      */
-    protected BaseJsonSerializable|Collection|array $headers = [];
+    protected array $headers = [];
 
     /**
-     * @var BaseJsonSerializable|Collection|array
+     * @var array
      */
-    protected BaseJsonSerializable|Collection|array $httpOptions = [];
+    protected array $httpOptions = [];
 
     /*****
      * SETTERS & GETTERS
      *****/
 
     /**
-     * @return array|BaseJsonSerializable|Collection
+     * @return Collection
      */
-    public function getData(): BaseJsonSerializable|array|Collection
+    public function getData(): Collection
     {
-        return $this->data;
+        return collect($this->data);
     }
 
     /**
@@ -45,26 +45,37 @@ trait UsesHttpFieldsTrait
      */
     public function setData(BaseJsonSerializable|array|Collection $data): void
     {
-        $this->data = $data;
+        $this->data = self::normalizeToArray($data);
     }
 
     /**
-     * @param  BaseJsonSerializable|array|Collection $data
+     * @param BaseJsonSerializable|array|Collection $data
+     * @param bool $merge If true, the new data will be merged to the old data. If false, the new data will replace the old data.
+     * @param bool $override If true, common keys from new data will replace the old one's. If false, common keys will be ignored.
      * @return static
      */
-    public function data(BaseJsonSerializable|array|Collection $data): static
+    public function data(BaseJsonSerializable|array|Collection $data, bool $merge = true, bool $override = true): static
     {
-        $this->setData($data);
+        $data = self::normalizeToArray($data);
+
+        if (! $merge) {
+            $this->data = [];
+        }
+        else if (! $override) {
+            $data = collect($data)->except(array_keys($this->data));
+        }
+
+        $this->data = $this->getData()->merge($data)->toArray();
 
         return $this;
     }
 
     /**
-     * @return array|BaseJsonSerializable|Collection
+     * @return Collection
      */
-    public function getHeaders(): BaseJsonSerializable|array|Collection
+    public function getHeaders(): Collection
     {
-        return $this->headers;
+        return collect($this->headers);
     }
 
     /**
@@ -73,26 +84,37 @@ trait UsesHttpFieldsTrait
      */
     public function setHeaders(BaseJsonSerializable|array|Collection $headers): void
     {
-        $this->headers = $headers;
+        $this->headers = self::normalizeToArray($headers);
     }
 
     /**
-     * @param  array|BaseJsonSerializable|Collection $headers
+     * @param array|BaseJsonSerializable|Collection $headers
+     * @param bool $merge If true, the new headers will be merged to the old headers. If false, the new headers will replace the old headers.
+     * @param bool $override If true, common keys from new headers will replace the old one's. If false, common keys will be ignored.
      * @return static
      */
-    public function headers(BaseJsonSerializable|array|Collection $headers): static
+    public function headers(BaseJsonSerializable|array|Collection $headers, bool $merge = true, bool $override = true): static
     {
-        $this->setHeaders($headers);
+        $headers = self::normalizeToArray($headers);
+
+        if (! $merge) {
+            $this->headers = [];
+        }
+        else if (! $override) {
+            $headers = collect($headers)->except(array_keys($this->headers));
+        }
+
+        $this->headers = $this->getHeaders()->merge($headers)->toArray();
 
         return $this;
     }
 
     /**
-     * @return array|BaseJsonSerializable|Collection
+     * @return Collection
      */
-    public function getHttpOptions(): BaseJsonSerializable|array|Collection
+    public function getHttpOptions(): Collection
     {
-        return $this->httpOptions;
+        return collect($this->httpOptions);
     }
 
     /**
@@ -101,17 +123,41 @@ trait UsesHttpFieldsTrait
      */
     public function setHttpOptions(BaseJsonSerializable|array|Collection $httpOptions): void
     {
-        $this->httpOptions = $httpOptions;
+        $this->httpOptions = self::normalizeToArray($httpOptions);
     }
 
     /**
-     * @param  array|BaseJsonSerializable|Collection $httpOptions
+     * @param array|BaseJsonSerializable|Collection $httpOptions
+     * @param bool $merge If true, the new http options will be merged to the old http options. If false, the new http options will replace the old http options.
+     * @param bool $override If true, common keys from new http options will replace the old one's. If false, common keys will be ignored.
      * @return static
      */
-    public function httpOptions(BaseJsonSerializable|array|Collection $httpOptions): static
+    public function httpOptions(BaseJsonSerializable|array|Collection $httpOptions, bool $merge = true, bool $override = true): static
     {
-        $this->setHttpOptions($httpOptions);
+        $httpOptions = self::normalizeToArray($httpOptions);
+
+        if (! $merge) {
+            $this->httpOptions = [];
+        }
+        else if (! $override) {
+            $httpOptions = collect($httpOptions)->except(array_keys($this->httpOptions));
+        }
+
+        $this->httpOptions = $this->getHttpOptions()->merge($httpOptions)->toArray();
 
         return $this;
+    }
+
+    /**
+     * @param  BaseJsonSerializable|Collection|array $data
+     * @return array
+     */
+    public static function normalizeToArray(BaseJsonSerializable|Collection|array $data): array
+    {
+        if ($data instanceof Collection || $data instanceof BaseJsonSerializable) {
+            return $data->toArray();
+        }
+
+        return $data;
     }
 }

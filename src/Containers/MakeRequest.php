@@ -14,6 +14,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use ReflectionException;
 use RuntimeException;
 
 /**
@@ -30,6 +31,7 @@ class MakeRequest
     public const GET = 'get';
     public const POST = 'post';
     public const PUT = 'put';
+    public const PATCH = 'patch';
     public const DELETE = 'delete';
 
     public const AS_JSON = 'as_json';
@@ -51,9 +53,9 @@ class MakeRequest
     protected ?string $body_format;
 
     /**
-     * @var Collection
+     * @var array
      */
-    protected Collection $pre_request_processes;
+    protected array $pre_request_processes;
 
     /**
      * @param string|null $base_url
@@ -62,24 +64,20 @@ class MakeRequest
     {
         $this->setBaseUrl($base_url);
 
-        $this->pre_request_processes = collect(
-            [
-                fn(self $request) => $request->setData(self::normalizeToArray($request->getData())),
-                fn(self $request) => $request->setHeaders(self::normalizeToArray($request->getHeaders())),
-                fn(self $request) => $request->setHttpOptions(self::normalizeToArray($request->getHttpOptions())),
-                function (self $request) {
-                    $request->getHttpOptions()['verify'] = (bool) config('starter-kit.verify_ssl');
-                }
-            ]
-        );
+        $this->pre_request_processes = [
+            function (self $request) {
+                $request->httpOptions(['verify' => (bool) config('starter-kit.verify_ssl')]);
+            }
+        ];
     }
 
     /**
-     * @param  string      $method
-     * @param  string|null $append_url
-     * @param  string|null $body_format
-     * @param  bool        $return_as_model
+     * @param string $method
+     * @param string|null $append_url
+     * @param string|null $body_format
+     * @param bool $return_as_model
      * @return PromiseInterface|Response|Builder|AuditLog
+     * @throws ReflectionException
      */
     public function execute(
         string $method,
@@ -111,14 +109,11 @@ class MakeRequest
 
         // Initiate HTTP call
 
-        $result = match ($method) {
-            self::GET => $response->get($url, $this->getData()),
-            self::POST => $response->post($url, $this->getData()),
-            self::PUT => $response->put($url, $this->getData()),
-            self::DELETE => $response->delete($url, $this->getData()),
-            self::HEAD => $response->head($url, $this->getData()),
-            default => throw new RuntimeException('HTTP method not available.')
-        };
+        if (! in_array($method, [self::GET, self::POST, self::PUT, self::PATCH, self::DELETE, self::HEAD])) {
+            throw new RuntimeException('HTTP method not available.');
+        }
+
+        $result = $response->$method($url, $this->data);
 
         if ($return_as_model) {
             $log = new AuditLogDataFactory;
@@ -134,10 +129,11 @@ class MakeRequest
     }
 
     /**
-     * @param  string|null $append_url
-     * @param  string|null $body_format
-     * @param  bool        $return_as_model
+     * @param string|null $append_url
+     * @param string|null $body_format
+     * @param bool $return_as_model
      * @return PromiseInterface|Response|Builder|AuditLog
+     * @throws ReflectionException
      */
     public function executeHead(
         ?string $append_url = '',
@@ -148,10 +144,11 @@ class MakeRequest
     }
 
     /**
-     * @param  string|null $append_url
-     * @param  string|null $body_format
-     * @param  bool        $return_as_model
+     * @param string|null $append_url
+     * @param string|null $body_format
+     * @param bool $return_as_model
      * @return PromiseInterface|Response|Builder|AuditLog
+     * @throws ReflectionException
      */
     public function executeGet(
         ?string $append_url = '',
@@ -162,10 +159,11 @@ class MakeRequest
     }
 
     /**
-     * @param  string|null $append_url
-     * @param  string|null $body_format
-     * @param  bool        $return_as_model
+     * @param string|null $append_url
+     * @param string|null $body_format
+     * @param bool $return_as_model
      * @return PromiseInterface|Response|Builder|AuditLog
+     * @throws ReflectionException
      */
     public function executePost(
         ?string $append_url = '',
@@ -176,10 +174,11 @@ class MakeRequest
     }
 
     /**
-     * @param  string|null $append_url
-     * @param  string|null $body_format
-     * @param  bool        $return_as_model
+     * @param string|null $append_url
+     * @param string|null $body_format
+     * @param bool $return_as_model
      * @return PromiseInterface|Response|Builder|AuditLog
+     * @throws ReflectionException
      */
     public function executePut(
         ?string $append_url = '',
@@ -190,10 +189,11 @@ class MakeRequest
     }
 
     /**
-     * @param  string|null $append_url
-     * @param  string|null $body_format
-     * @param  bool        $return_as_model
+     * @param string|null $append_url
+     * @param string|null $body_format
+     * @param bool $return_as_model
      * @return PromiseInterface|Response|Builder|AuditLog
+     * @throws ReflectionException
      */
     public function executeDelete(
         ?string $append_url = '',
@@ -212,13 +212,13 @@ class MakeRequest
      */
     public function getHttp(): PendingRequest
     {
-        $this->pre_request_processes->each(fn($closure) => $closure($this));
+        $this->getPreRequestProcesses()->each(fn($closure) => $closure($this));
 
         // Prepare HTTP call
 
         $response = Http::withUserAgent(config('api-sdk-kit.user_agent'))
-            ->withHeaders($this->getHeaders())
-            ->withOptions($this->getHttpOptions());
+            ->withHeaders($this->headers)
+            ->withOptions($this->httpOptions);
 
         // Prepare Body Format
 
@@ -300,7 +300,7 @@ class MakeRequest
      */
     public function addToPreRequestProcesses(Closure|array $closure): static
     {
-        $this->pre_request_processes = $this->pre_request_processes->merge(collect($closure));
+        $this->pre_request_processes = $this->getPreRequestProcesses()->merge(collect($closure))->toArray();
 
         return $this;
     }
@@ -310,7 +310,7 @@ class MakeRequest
      */
     public function getPreRequestProcesses(): Collection
     {
-        return $this->pre_request_processes;
+        return collect($this->pre_request_processes);
     }
 
     /*****
@@ -318,15 +318,17 @@ class MakeRequest
      *****/
 
     /**
-     * @param  BaseJsonSerializable|Collection|array $data
-     * @return array
+     * @param string $url
+     * @return static
      */
-    public static function normalizeToArray(BaseJsonSerializable|Collection|array $data): array
+    public function proxy(string $url): static
     {
-        if ($data instanceof Collection || $data instanceof BaseJsonSerializable) {
-            return $data->toArray();
-        }
+        $closure = function (self $request) use ($url) {
+            $request->httpOptions(['proxy' => $url]);
+        };
 
-        return $data;
+        $this->addToPreRequestProcesses($closure);
+
+        return $this;
     }
 }

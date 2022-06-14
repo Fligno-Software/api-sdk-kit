@@ -6,6 +6,7 @@ use Fligno\ApiSdkKit\Traits\HasAuditLogFactoryTrait;
 use Fligno\StarterKit\Casts\AsCompressedArrayCast;
 use Fligno\StarterKit\Casts\AsCompressedCollectionCast;
 use Fligno\StarterKit\Traits\UsesUUIDTrait;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -15,10 +16,7 @@ use JetBrains\PhpStorm\Pure;
 /**
  * Class AuditLog
  *
- * Note:
- * By default, models and factories inside a package need to explicitly connect with each other.
- * Thanks to `fligno/boilerplate-generator` package, once you create a factory file, it will also create a trait.
- * The trait then should be used inside the concerned model.
+ * @method static Builder attached(bool $bool = true) Get logs that has or lacks attachment
  *
  * @author James Carlo Luchavez <jamescarlo.luchavez@fligno.com>
  */
@@ -35,21 +33,6 @@ class AuditLog extends Model
     {
         return 'uuid';
     }
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'user_id',
-        'url',
-        'method',
-        'headers',
-        'data',
-        'status',
-        'deleted_at',
-    ];
 
     protected $casts = [
         'headers' => AsCompressedArrayCast::class,
@@ -84,7 +67,16 @@ class AuditLog extends Model
      * ACCESSORS & MUTATORS
      *****/
 
-    //
+    public function scopeAttached(Builder $builder, bool $bool = true)
+    {
+        $columns = ['audit_loggable_type', 'audit_loggable_id'];
+
+        return $builder->when(
+            $bool,
+            fn (Builder $builder) => $builder->whereNotNull($columns),
+            fn (Builder $builder) => $builder->whereNull($columns)
+        );
+    }
 
     /********
      * OTHER METHODS
