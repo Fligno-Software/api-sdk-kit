@@ -2,10 +2,11 @@
 
 namespace Fligno\ApiSdkKit;
 
-use Fligno\ApiSdkKit\Console\Commands\DeleteOrphanAuditLogsCommand;
+use Fligno\ApiSdkKit\Console\Commands\ApiSdkKitClearCacheCommand;
+use Fligno\ApiSdkKit\Console\Commands\DeleteUnattachedAuditLogsCommand;
 use Fligno\ApiSdkKit\Containers\MakeRequest;
 use Fligno\ApiSdkKit\Models\AuditLog;
-use Fligno\ApiSdkKit\Policies\AuditLogPolicy;
+use Fligno\ApiSdkKit\Observers\AuditLogObserver;
 use Fligno\ApiSdkKit\Repositories\AuditLogRepository;
 use Fligno\StarterKit\Interfaces\ProviderConsoleKernelInterface;
 use Fligno\StarterKit\Providers\BaseStarterKitServiceProvider as ServiceProvider;
@@ -23,14 +24,22 @@ class ApiSdkKitServiceProvider extends ServiceProvider implements ProviderConsol
      * @var array|string[]
      */
     protected array $commands = [
-        DeleteOrphanAuditLogsCommand::class,
+        DeleteUnattachedAuditLogsCommand::class,
+        ApiSdkKitClearCacheCommand::class,
     ];
 
     /**
      * @var array|string[]
      */
-    protected array $policy_map = [
-        AuditLogPolicy::class => AuditLog::class
+    protected array $morph_map = [
+        'audit_log' => AuditLog::class,
+    ];
+
+    /**
+     * @var array|string[]
+     */
+    protected array $observer_map = [
+        AuditLogObserver::class => AuditLog::class,
     ];
 
     /**
@@ -116,9 +125,14 @@ class ApiSdkKitServiceProvider extends ServiceProvider implements ProviderConsol
      */
     public function registerToConsoleKernel(Schedule $schedule): void
     {
-        $schedule->command('ask:delete-orphan-logs')
-            ->hourly()
+        $schedule->command('ask:delete-unattached-logs')
+            ->daily()
             ->runInBackground()
             ->onOneServer();
+    }
+
+    public function areHelpersEnabled(): bool
+    {
+        return false;
     }
 }

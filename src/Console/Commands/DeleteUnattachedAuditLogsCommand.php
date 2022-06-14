@@ -6,26 +6,26 @@ use Fligno\ApiSdkKit\Models\AuditLog;
 use Illuminate\Console\Command;
 
 /**
- * Class DeleteOrphanAuditLogsCommand
+ * Class DeleteUnattachedAuditLogsCommand
  *
  * @author James Carlo Luchavez <jamescarlo.luchavez@fligno.com>
  * @since 2022-05-04
  */
-class DeleteOrphanAuditLogsCommand extends Command
+class DeleteUnattachedAuditLogsCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'ask:delete-orphan-logs';
+    protected $name = 'ask:delete-unattached-logs';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Remove orphan audit logs.';
+    protected $description = 'Remove unattached audit logs.';
 
     /**
      * Execute the console command.
@@ -34,12 +34,9 @@ class DeleteOrphanAuditLogsCommand extends Command
      */
     public function handle(): int
     {
-        $orphanLogs = AuditLog::query()
-            ->whereNull('audit_loggable_type')
-            ->whereNull('audit_loggable_id')
-            ->where('created_at', '<=', now()->subHour());
+        $unattachedLogs = AuditLog::attached(false)->where('created_at', '<=', now()->subHour());
 
-        config('api-sdk-kit.audit_log_force_delete_orphan') ? $orphanLogs->forceDelete() : $orphanLogs->delete();
+        config('api-sdk-kit.audit_log_force_delete_unattached') ? $unattachedLogs->forceDelete() : $unattachedLogs->delete();
 
         return self::SUCCESS;
     }
