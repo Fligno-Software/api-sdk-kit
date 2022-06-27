@@ -3,18 +3,18 @@
 namespace Fligno\ApiSdkKit\Containers;
 
 use Closure;
+use Exception;
 use Fligno\ApiSdkKit\DataFactories\AuditLogDataFactory;
 use Fligno\ApiSdkKit\Models\AuditLog;
-use Fligno\StarterKit\Abstracts\BaseJsonSerializable;
 use Fligno\ApiSdkKit\Traits\UsesHttpFieldsTrait;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
-use ReflectionException;
 use RuntimeException;
 
 /**
@@ -76,15 +76,14 @@ class MakeRequest
      * @param string|null $append_url
      * @param string|null $body_format
      * @param bool $return_as_model
-     * @return PromiseInterface|Response|Builder|AuditLog
-     * @throws ReflectionException
+     * @return PromiseInterface|Response|\Illuminate\Http\Response|Builder|AuditLog|null
      */
     public function execute(
         string $method,
         ?string $append_url = '',
         string $body_format = null,
         bool $return_as_model = true
-    ): PromiseInterface|Response|Builder|AuditLog {
+    ): PromiseInterface|Response|\Illuminate\Http\Response|Builder|AuditLog|null {
         // Prepare URL
 
         if (! ($this->getBaseUrl())) {
@@ -103,43 +102,59 @@ class MakeRequest
 
         $url = $this->getCompleteUrl();
 
-        // Prepare Guzzle HTTP
-
-        $response = $this->getHttp();
-
-        // Initiate HTTP call
-
         if (! in_array($method, [self::GET, self::POST, self::PUT, self::PATCH, self::DELETE, self::HEAD])) {
             throw new RuntimeException('HTTP method not available.');
         }
 
-        $result = $response->$method($url, $this->data);
+        // Execute Pre-Request Processes
+        $this->executePreRequestProcesses();
 
-        if ($return_as_model) {
-            $log = new AuditLogDataFactory;
+        $response = null;
+
+        if ($this->isInternalUrl($url)) {
+            $request = Request::create($url, $method, $this->data, [], [], []);
+            $request->headers->add($this->headers);
+            try {
+                $response = app()->handle($request);
+            } catch (Exception) {
+            }
+        } else {
+            $request = $this->getHttp();
+            $response = $request->$method($url, $this->data);
+        }
+
+        if ($response && $return_as_model) {
+            $log = new AuditLogDataFactory();
             $log->url = $url;
             $log->method = $method;
-            $log->status = $result->status();
-            $log->data = $result->collect();
-            $log->headers = $result->headers();
+
+            if ($response instanceof Response) {
+                $log->data = $response->collect();
+                $log->headers = $response->headers();
+            } elseif ($response instanceof \Illuminate\Http\Response) {
+                $log->data = collect(json_decode($response->getContent(), true));
+                $log->headers = $response->headers->all();
+            }
+
+            $log->status = $response->status();
+
             return $log->create();
         }
 
-        return $result;
+        return $response;
     }
 
     /**
      * @param string|null $append_url
      * @param string|null $body_format
      * @param bool $return_as_model
-     * @return PromiseInterface|Response|Builder|AuditLog
-     * @throws ReflectionException
+     * @return PromiseInterface|Response|\Illuminate\Http\Response|Builder|AuditLog|null
      */
     public function executeHead(
         ?string $append_url = '',
         string $body_format = null,
         bool $return_as_model = true
-    ): PromiseInterface|Response|Builder|AuditLog {
+    ): PromiseInterface|Response|\Illuminate\Http\Response|Builder|AuditLog|null {
         return $this->execute(self::HEAD, $append_url, $body_format, $return_as_model);
     }
 
@@ -147,14 +162,13 @@ class MakeRequest
      * @param string|null $append_url
      * @param string|null $body_format
      * @param bool $return_as_model
-     * @return PromiseInterface|Response|Builder|AuditLog
-     * @throws ReflectionException
+     * @return PromiseInterface|Response|\Illuminate\Http\Response|Builder|AuditLog|null
      */
     public function executeGet(
         ?string $append_url = '',
         string $body_format = null,
         bool $return_as_model = true
-    ): PromiseInterface|Response|Builder|AuditLog {
+    ): PromiseInterface|Response|\Illuminate\Http\Response|Builder|AuditLog|null {
         return $this->execute(self::GET, $append_url, $body_format, $return_as_model);
     }
 
@@ -162,14 +176,13 @@ class MakeRequest
      * @param string|null $append_url
      * @param string|null $body_format
      * @param bool $return_as_model
-     * @return PromiseInterface|Response|Builder|AuditLog
-     * @throws ReflectionException
+     * @return PromiseInterface|Response|\Illuminate\Http\Response|Builder|AuditLog|null
      */
     public function executePost(
         ?string $append_url = '',
         string $body_format = null,
         bool $return_as_model = true
-    ): PromiseInterface|Response|Builder|AuditLog {
+    ): PromiseInterface|Response|\Illuminate\Http\Response|Builder|AuditLog|null {
         return $this->execute(self::POST, $append_url, $body_format, $return_as_model);
     }
 
@@ -177,14 +190,13 @@ class MakeRequest
      * @param string|null $append_url
      * @param string|null $body_format
      * @param bool $return_as_model
-     * @return PromiseInterface|Response|Builder|AuditLog
-     * @throws ReflectionException
+     * @return PromiseInterface|Response|\Illuminate\Http\Response|Builder|AuditLog|null
      */
     public function executePut(
         ?string $append_url = '',
         string $body_format = null,
         bool $return_as_model = true
-    ): PromiseInterface|Response|Builder|AuditLog {
+    ): PromiseInterface|Response|\Illuminate\Http\Response|Builder|AuditLog|null {
         return $this->execute(self::PUT, $append_url, $body_format, $return_as_model);
     }
 
@@ -192,14 +204,13 @@ class MakeRequest
      * @param string|null $append_url
      * @param string|null $body_format
      * @param bool $return_as_model
-     * @return PromiseInterface|Response|Builder|AuditLog
-     * @throws ReflectionException
+     * @return PromiseInterface|Response|\Illuminate\Http\Response|Builder|AuditLog|null
      */
     public function executeDelete(
         ?string $append_url = '',
         string $body_format = null,
         bool $return_as_model = true
-    ): PromiseInterface|Response|Builder|AuditLog {
+    ): PromiseInterface|Response|\Illuminate\Http\Response|Builder|AuditLog|null {
         return $this->execute(self::DELETE, $append_url, $body_format, $return_as_model);
     }
 
@@ -212,8 +223,6 @@ class MakeRequest
      */
     public function getHttp(): PendingRequest
     {
-        $this->getPreRequestProcesses()->each(fn($closure) => $closure($this));
-
         // Prepare HTTP call
 
         $response = Http::withUserAgent(config('api-sdk-kit.user_agent'))
@@ -313,6 +322,14 @@ class MakeRequest
         return collect($this->pre_request_processes);
     }
 
+    /**
+     * @return void
+     */
+    protected function executePreRequestProcesses(): void
+    {
+        $this->getPreRequestProcesses()->each(fn ($closure) => $closure($this));
+    }
+
     /*****
      * OTHER FUNCTIONS
      *****/
@@ -330,5 +347,16 @@ class MakeRequest
         $this->addToPreRequestProcesses($closure);
 
         return $this;
+    }
+
+    /**
+     * @param string $url
+     * @return bool
+     */
+    public function isInternalUrl(string $url): bool
+    {
+        $arr = parse_url($url);
+
+        return isset($arr['host']) && isset($_SERVER['HTTP_HOST']) && strcmp($arr['host'], $_SERVER['HTTP_HOST']) === 0;
     }
 }
