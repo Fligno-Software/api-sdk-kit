@@ -11,6 +11,7 @@ use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
@@ -131,7 +132,7 @@ class MakeRequest
             if ($response instanceof Response) {
                 $log->data = $response->collect();
                 $log->headers = $response->headers();
-            } elseif ($response instanceof \Illuminate\Http\Response) {
+            } elseif ($response instanceof \Illuminate\Http\Response || $response instanceof JsonResponse) {
                 $log->data = collect(json_decode($response->getContent(), true));
                 $log->headers = $response->headers->all();
             }
