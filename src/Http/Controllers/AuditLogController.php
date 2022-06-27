@@ -42,7 +42,7 @@ class AuditLogController extends Controller
      */
     public function index(IndexAuditLogRequest $request): JsonResponse
     {
-        $data = new AuditLog;
+        $data = new AuditLog();
 
         if ($request->has('full_data') === true) {
             $data = $data->get();

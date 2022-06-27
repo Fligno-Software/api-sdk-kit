@@ -5,6 +5,7 @@ namespace Fligno\ApiSdkKit\Models;
 use Fligno\ApiSdkKit\Traits\HasAuditLogFactoryTrait;
 use Fligno\StarterKit\Casts\AsCompressedArrayCast;
 use Fligno\StarterKit\Casts\AsCompressedCollectionCast;
+use Fligno\StarterKit\Interfaces\HasHttpStatusCodeInterface;
 use Fligno\StarterKit\Traits\UsesUUIDTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -20,9 +21,11 @@ use JetBrains\PhpStorm\Pure;
  *
  * @author James Carlo Luchavez <jamescarlo.luchavez@fligno.com>
  */
-class AuditLog extends Model
+class AuditLog extends Model implements HasHttpStatusCodeInterface
 {
-    use UsesUUIDTrait, SoftDeletes, HasAuditLogFactoryTrait;
+    use UsesUUIDTrait;
+    use SoftDeletes;
+    use HasAuditLogFactoryTrait;
 
     /**
      * Get the route key for the model.

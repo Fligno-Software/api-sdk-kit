@@ -61,8 +61,8 @@ class ApiSdkKitServiceProvider extends ServiceProvider implements ProviderConsol
         // Register the service the package provides.
         $this->app->singleton(
             'api-sdk-kit',
-            function ($app) {
-                return new ApiSdkKit;
+            function () {
+                return new ApiSdkKit();
             }
         );
 
@@ -116,7 +116,7 @@ class ApiSdkKitServiceProvider extends ServiceProvider implements ProviderConsol
         ], 'api-sdk-kit.views');*/
 
         // Registering package commands.
-         $this->commands($this->commands);
+        $this->commands($this->commands);
     }
 
     /**

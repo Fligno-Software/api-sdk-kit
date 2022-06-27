@@ -42,13 +42,15 @@ class ApiSdkKit
 
 
     /**
+     * @param bool $rehydrate
      * @return Collection
      */
-    public function getAuditLogHandlers(): Collection
+    public function getAuditLogHandlers(bool $rehydrate = false): Collection
     {
-        return $this->getCache($this->getTags(), 'audit_log_handlers', function () {
-            return collect($this->auditLogHandlers);
-        });
+        $tags = $this->getTags();
+        $key = 'audit_log_handlers';
+
+        return $this->getCache($tags, $key, fn () => collect($this->auditLogHandlers), $rehydrate);
     }
 
     /**
@@ -73,18 +75,8 @@ class ApiSdkKit
      */
     public function addAuditLogHandler(string $model_class, string $audit_log_handler_class, bool $override = false): void
     {
-        $model_class = get_class(new $model_class);
-        $audit_log_handler_class = get_class(new $audit_log_handler_class);
-
-        // Check if $model_class is valid
-        if (! is_subclass_of($model_class, Model::class)) {
-            throw new RuntimeException('Invalid Eloquent model.');
-        }
-
-        // Check AuditLogHandler is valid
-        if (! is_subclass_of($audit_log_handler_class, BaseAuditLogHandler::class)) {
-            throw new RuntimeException('Invalid AuditLogHandler class.');
-        }
+        $this->validateClass($model_class, Model::class);
+        $this->validateClass($audit_log_handler_class, BaseAuditLogHandler::class);
 
         // Grab copy of Collection
         $handlers = $this->getAuditLogHandlers();
@@ -103,11 +95,8 @@ class ApiSdkKit
             // Add to Collection
             $this->auditLogHandlers = $handlers->put($model_class, $audit_log_handler_class)->toArray();
 
-            // Clear Cache
-            apiSdkKit()->clearCache();
-
             // Invoke to generate new cache
-            $this->getAuditLogHandlers();
+            $this->getAuditLogHandlers(true);
         }
     }
 }
