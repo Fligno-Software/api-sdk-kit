@@ -121,7 +121,11 @@ class MakeRequest
             }
         } else {
             $request = $this->getHttp();
-            $response = $request->$method($url, $this->data);
+
+            // Some API like AWS SES has issues with empty array data
+            $data = count($this->data) ? $this->data : null;
+
+            $response = $request->$method($url, $data);
         }
 
         if ($response && $return_as_model) {
@@ -301,7 +305,7 @@ class MakeRequest
      */
     public function getCompleteUrl(): string
     {
-        return $this->base_url . '/' . $this->append_url;
+        return collect([$this->base_url, $this->append_url])->filter()->implode('/');
     }
 
     /**
@@ -331,9 +335,7 @@ class MakeRequest
         $this->getPreRequestProcesses()->each(fn ($closure) => $closure($this));
     }
 
-    /*****
-     * OTHER FUNCTIONS
-     *****/
+    /***** OTHER FUNCTIONS *****/
 
     /**
      * @param string $url
@@ -343,6 +345,34 @@ class MakeRequest
     {
         $closure = function (self $request) use ($url) {
             $request->httpOptions(['proxy' => $url]);
+        };
+
+        $this->addToPreRequestProcesses($closure);
+
+        return $this;
+    }
+
+    /**
+     * @return static
+     */
+    public function clearHeaders(): static
+    {
+        $closure = function (self $request) {
+            $request->headers([], false);
+        };
+
+        $this->addToPreRequestProcesses($closure);
+
+        return $this;
+    }
+
+    /**
+     * @return static
+     */
+    public function clearHttpOptions(): static
+    {
+        $closure = function (self $request) {
+            $request->httpOptions([], false);
         };
 
         $this->addToPreRequestProcesses($closure);

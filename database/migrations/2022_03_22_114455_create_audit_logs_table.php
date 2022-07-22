@@ -32,7 +32,7 @@ return new class () extends Migration {
                 $table->uuid('uuid')->unique();
                 $table->foreignIdFor(starterKit()->getUserModel())->nullable()->constrained();
                 $table->nullableMorphs('audit_loggable');
-                $table->string('url');
+                $table->text('url');
                 $table->string('method');
                 $table->binary('headers')->nullable();
                 $table->binary('data')->nullable();
